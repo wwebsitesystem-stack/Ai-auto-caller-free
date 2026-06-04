@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexusAI - Premium Voice Dispatch & Analytics</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/dist/vapi.js"></script>
     <style>
         :root {
             --bg-dark: #09090b;
@@ -33,7 +34,6 @@
             overflow: hidden;
         }
 
-        /* Sidebar Styling */
         .sidebar {
             width: 260px;
             background-color: var(--bg-card);
@@ -74,7 +74,6 @@
             color: var(--text-main);
         }
 
-        /* Main Content Container */
         .main-container {
             flex: 1;
             display: flex;
@@ -82,7 +81,6 @@
             overflow: hidden;
         }
 
-        /* Header */
         header {
             height: 70px;
             border-bottom: 1px solid var(--border);
@@ -92,21 +90,6 @@
             padding: 0 2rem;
         }
 
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.9rem;
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--accent), #a855f7);
-        }
-
-        /* Workspace Core layout */
         .workspace {
             flex: 1;
             display: grid;
@@ -116,7 +99,6 @@
             overflow: hidden;
         }
 
-        /* Glassmorphic Cards */
         .panel {
             background-color: var(--bg-card);
             border: 1px solid var(--border);
@@ -136,7 +118,6 @@
             gap: 0.5rem;
         }
 
-        /* Forms */
         .form-group {
             margin-bottom: 1.25rem;
         }
@@ -170,7 +151,7 @@
         textarea {
             resize: none;
             flex: 1;
-            min-height: 200px;
+            min-height: 150px;
         }
 
         .btn {
@@ -187,6 +168,7 @@
             justify-content: center;
             gap: 0.5rem;
             font-size: 0.95rem;
+            width: 100%;
         }
 
         .btn:hover {
@@ -200,7 +182,6 @@
             background-color: #dc2626;
         }
 
-        /* Dashboard & Call Stream */
         .status-bar {
             display: flex;
             align-items: center;
@@ -233,7 +214,6 @@
             animation: pulse 1.5s infinite;
         }
 
-        /* Stream/Transcript Feed */
         .transcript-container {
             flex: 1;
             background-color: #09090b;
@@ -277,7 +257,6 @@
             margin-bottom: 0.25rem;
         }
 
-        /* Intercept Controls */
         .intercept-panel {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -298,7 +277,6 @@
             cursor: not-allowed;
         }
 
-        /* Audio Wave Animation */
         .wave-container {
             display: flex;
             align-items: center;
@@ -315,7 +293,6 @@
             display: none;
         }
 
-        /* Active Call/Barge Overrides */
         .barge-active {
             border-color: var(--success) !important;
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
@@ -346,18 +323,12 @@
             <span>NEXUS.AI</span>
         </div>
         <a href="#" class="nav-item active"><i class="fa-solid fa-phone-volume"></i> Outbound Engine</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Call History</a>
-        <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Developer API</a>
     </div>
 
     <div class="main-container">
         <header>
             <div style="font-weight: 500;">Console / Outbound Engine</div>
-            <div class="user-profile">
-                <span>Premium Tier Account</span>
-                <div class="avatar"></div>
-            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">GitHub Pages Deployment</div>
         </header>
 
         <div class="workspace">
@@ -367,16 +338,21 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="vapi-key">Vapi Public Key (Paste Here)</label>
+                    <input type="password" id="vapi-key" placeholder="publicKey_example12345...">
+                </div>
+
+                <div class="form-group">
                     <label for="phone-number">Target Phone Number</label>
-                    <input type="tel" id="phone-number" placeholder="+1 (555) 000-0000" value="+1 (310) 555-0199">
+                    <input type="tel" id="phone-number" placeholder="+1234567890">
                 </div>
 
                 <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-                    <label for="script">AI Agent Script Instruction</label>
-                    <textarea id="script" placeholder="Paste the script or workflow instructions here...">You are Alex, a premium concierge executive representing Nexus Luxuries. Call the client to confirm their private villa booking for next weekend. Be incredibly polite, accommodating, and match their conversational speed. Answer any itinerary questions using your built-in knowledge base.</textarea>
+                    <label for="script">AI Agent Script Instruction (Paste Here)</label>
+                    <textarea id="script" placeholder="Paste your custom script or system instructions here...">You are a helpful customer service assistant. State your purpose clearly and respond contextually to whatever the person says.</textarea>
                 </div>
 
-                <button class="btn" id="start-call-btn" onclick="initiateSimulatedCall()">
+                <button class="btn" id="start-call-btn" onclick="startRealVoIPCall()">
                     <i class="fa-solid fa-bolt"></i> Launch AI Call
                 </button>
             </div>
@@ -407,7 +383,7 @@
                 <div class="transcript-container" id="transcript-feed">
                     <div style="color: var(--text-muted); text-align: center; margin: auto; font-size: 0.9rem;" id="placeholder-msg">
                         <i class="fa-solid fa-headset" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
-                        No live call session active. Configure parameters and launch agent.
+                        No live call session active.
                     </div>
                 </div>
 
@@ -424,128 +400,150 @@
     </div>
 
     <script>
-        let sessionActive = false;
-        let bargeModeActive = false;
-        let durationInterval;
-        let simulationTimeout;
+        let vapiClient = null;
+        let callActive = false;
+        let isBargedIn = false;
+        let timerInterval;
         let elapsedSeconds = 0;
 
-        const transcriptData = [
-            { speaker: "ai", text: "Hello! This is Alex speaking on behalf of Nexus Luxuries. Am I speaking with the primary reservation holder?" },
-            { speaker: "user", text: "Uh, yes this is he. Who is this again?" },
-            { speaker: "ai", text: "Hi there! I am your AI concierge assistant. I'm calling to personally verify your private villa booking for this upcoming weekend. I just wanted to verify everything is in order." },
-            { speaker: "user", text: "Oh perfect, fantastic. Yeah, I wanted to check if the infinity pool is heated?" },
-            { speaker: "ai", text: "Yes, absolutely! The pool is automatically set to a pristine 84 degrees Fahrenheit for your arrival, but I can adjust that remotely right now if you prefer it warmer." },
-            { speaker: "user", text: "Wow, perfect. Actually, wait a second, can I talk to a real person just to confirm my dietary requests?" }
-        ];
+        function setupVapiEventListeners() {
+            if (!vapiClient) return;
 
-        function initiateSimulatedCall() {
-            if(sessionActive) return;
-
-            // Reset UI state
-            sessionActive = true;
-            document.getElementById('placeholder-msg').style.display = 'none';
-            document.getElementById('transcript-feed').innerHTML = '';
-            document.getElementById('start-call-btn').disabled = true;
-            document.getElementById('hangup-btn').disabled = false;
-            document.getElementById('barge-btn').disabled = false;
-            
-            // Set dial state
-            updateStatus("Dialing target number...", "var(--accent)");
-            
-            // Animate wave lines
-            document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'block');
-
-            // Simulate Ringing -> Answered
-            setTimeout(() => {
-                updateStatus("Call Answered (AI Speaking)", "var(--success)");
+            vapiClient.on('call-start', () => {
+                callActive = true;
+                document.getElementById('placeholder-msg').style.display = 'none';
+                updateStatus("Call Live (AI Routing Active)", "var(--success)");
                 document.getElementById('status-dot').classList.add('active');
+                document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'block');
+                document.getElementById('hangup-btn').disabled = false;
+                document.getElementById('barge-btn').disabled = false;
                 startTimer();
-                runTranscriptSimulation(0);
-            }, 2500);
+            });
+
+            vapiClient.on('message', (message) => {
+                if (message.type === 'transcript') {
+                    if (message.transcriptType === 'partial') return; 
+                    
+                    const speakerType = message.role === 'assistant' ? 'ai' : 'user';
+                    appendBubble(speakerType, message.transcript);
+
+                    if (!isBargedIn) {
+                        updateStatus(message.role === 'assistant' ? "AI Speaking..." : "Customer Speaking...", message.role === 'assistant' ? "var(--accent)" : "#3b82f6");
+                    }
+                }
+            });
+
+            vapiClient.on('call-end', () => {
+                cleanUpSessionUI();
+            });
+
+            vapiClient.on('error', (error) => {
+                console.error(error);
+                updateStatus("API Protocol Error", "var(--danger)");
+                cleanUpSessionUI();
+            });
         }
 
-        function runTranscriptSimulation(index) {
-            if (!sessionActive || index >= transcriptData.length) return;
+        async function startRealVoIPCall() {
+            const apiKey = document.getElementById('vapi-key').value.trim();
+            const phoneNumber = document.getElementById('phone-number').value.trim();
+            const pastedScript = document.getElementById('script').value.trim();
 
-            simulationTimeout = setTimeout(() => {
-                // If developer barged into the call, delay automated script flow
-                if (bargeModeActive && transcriptData[index].speaker === 'ai') {
-                    runTranscriptSimulation(index); 
-                    return;
-                }
+            if (!apiKey) {
+                alert("Please paste your Vapi Public Key first.");
+                return;
+            }
+            if (!phoneNumber) {
+                alert("Please specify a target phone number.");
+                return;
+            }
 
-                appendBubble(transcriptData[index].speaker, transcriptData[index].text);
-                
-                // Adjust status headers dynamically based on who is talking
-                if(transcriptData[index].speaker === 'ai' && !bargeModeActive) {
-                    updateStatus("AI Speaking", "var(--success)");
-                } else if (!bargeModeActive) {
-                    updateStatus("Customer Speaking", "#3b82f6");
-                }
+            // Initialize or update the Vapi client instance with the entered key
+            vapiClient = new Vapi(apiKey);
+            setupVapiEventListeners();
 
-                runTranscriptSimulation(index + 1);
-            }, index === 0 ? 1000 : 4000);
-        }
+            document.getElementById('start-call-btn').disabled = true;
+            updateStatus("Routing outbound carrier paths...", "var(--accent)");
 
-        function appendBubble(speaker, text) {
-            const feed = document.getElementById('transcript-feed');
-            const bubble = document.createElement('div');
-            bubble.className = `bubble ${speaker}`;
-            
-            const label = speaker === 'ai' ? 'Nexus AI Agent' : 'Customer (Live)';
-            bubble.innerHTML = `<div class="speaker-label">${label}</div><div>${text}</div>`;
-            
-            feed.appendChild(bubble);
-            feed.scrollTop = feed.scrollHeight;
+            try {
+                await vapiClient.start({
+                    phoneNumber: phoneNumber,
+                    assistant: {
+                        model: "gpt-4-turbo",
+                        voice: "jennifer-playht", 
+                        firstMessage: "Hello, this is an automated AI call assistant.",
+                        systemPrompt: pastedScript 
+                    }
+                });
+            } catch (err) {
+                console.error("Session failed to launch:", err);
+                updateStatus("Connection Failure", "var(--danger)");
+                document.getElementById('start-call-btn').disabled = false;
+            }
         }
 
         function toggleBargeMode() {
-            if(!sessionActive) return;
+            if (!callActive || !vapiClient) return;
 
             const bargeBtn = document.getElementById('barge-btn');
             const panel = document.getElementById('dashboard-panel');
 
-            if(!bargeModeActive) {
-                // Activate mic / Intercept call
-                bargeModeActive = true;
+            if (!isBargedIn) {
+                vapiClient.setMuted(false); 
+                isBargedIn = true;
                 panel.classList.add('barge-active');
-                bargeBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> Exit Audio Bot`;
+                bargeBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> Return to AI Bot`;
                 bargeBtn.style.backgroundColor = "var(--success)";
-                updateStatus("Live Control: Your Mic Active", "var(--success)");
-                appendBubble('user', "*Admin popped into call room. AI standby mode active.*");
+                updateStatus("Live Overtake: Your Mic Active", "var(--success)");
+                appendBubble('user', "[Console Admin has stepped into the call. Microphone active.]");
             } else {
-                // Return call flow to AI
-                bargeModeActive = false;
+                vapiClient.setMuted(true);
+                isBargedIn = false;
                 panel.classList.remove('barge-active');
                 bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
                 bargeBtn.style.backgroundColor = "transparent";
                 updateStatus("AI Control Restored", "var(--accent)");
-                appendBubble('ai', "*Admin exited. AI has resumed parsing script context.*");
+                appendBubble('ai', "[Console Admin left. AI has resumed parsing script.]");
             }
         }
 
         function terminateCall() {
-            sessionActive = false;
-            bargeModeActive = false;
-            clearTimeout(simulationTimeout);
-            clearInterval(durationInterval);
+            if (vapiClient) vapiClient.stop();
+            cleanUpSessionUI();
+        }
+
+        function cleanUpSessionUI() {
+            callActive = false;
+            isBargedIn = false;
+            clearInterval(timerInterval);
             
-            // Reset UI
             document.getElementById('status-dot').classList.remove('active');
-            updateStatus("Session Terminated", varColor = "var(--danger)");
+            updateStatus("Session Offline", "var(--danger)");
             document.getElementById('dashboard-panel').classList.remove('barge-active');
-            
             document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'none');
             
             document.getElementById('start-call-btn').disabled = false;
             document.getElementById('hangup-btn').disabled = true;
+            
             const bargeBtn = document.getElementById('barge-btn');
             bargeBtn.disabled = true;
             bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
             bargeBtn.style.backgroundColor = "transparent";
+        }
 
-            appendBubble('ai', "*Call hung up gracefully by console system dashboard.*");
+        function appendBubble(speaker, text) {
+            const feed = document.getElementById('transcript-feed');
+            const placeholder = document.getElementById('placeholder-msg');
+            if(placeholder) placeholder.style.display = 'none';
+
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${speaker}`;
+            
+            const label = speaker === 'ai' ? 'Nexus AI Agent' : 'Customer Line';
+            bubble.innerHTML = `<div class="speaker-label">${label}</div><div>${text}</div>`;
+            
+            feed.appendChild(bubble);
+            feed.scrollTop = feed.scrollHeight;
         }
 
         function updateStatus(text, color) {
@@ -553,13 +551,12 @@
             const dot = document.getElementById('status-dot');
             statusText.innerText = text;
             dot.style.backgroundColor = color;
-            if(sessionActive) dot.style.boxShadow = `0 0 8px ${color}`;
         }
 
         function startTimer() {
             elapsedSeconds = 0;
-            clearInterval(durationInterval);
-            durationInterval = setInterval(() => {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
                 elapsedSeconds++;
                 let min = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
                 let sec = (elapsedSeconds % 60).toString().padStart(2, '0');
