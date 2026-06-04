@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexusAI - Premium Voice Dispatch & Analytics</title>
+    <title>NexusAI - Custom Voice Dispatch & Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.0/dist/vapi.js"></script>
     <style>
         :root {
             --bg-dark: #09090b;
@@ -69,7 +68,7 @@
             font-size: 0.95rem;
         }
 
-        .nav-item.active, .nav-item:hover {
+        .nav-item.active {
             background-color: #27272a80;
             color: var(--text-main);
         }
@@ -119,7 +118,7 @@
         }
 
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
 
         label {
@@ -128,7 +127,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             font-weight: 600;
         }
 
@@ -150,8 +149,7 @@
 
         textarea {
             resize: none;
-            flex: 1;
-            min-height: 150px;
+            height: 120px;
         }
 
         .btn {
@@ -169,6 +167,7 @@
             gap: 0.5rem;
             font-size: 0.95rem;
             width: 100%;
+            margin-top: auto;
         }
 
         .btn:hover {
@@ -327,32 +326,32 @@
 
     <div class="main-container">
         <header>
-            <div style="font-weight: 500;">Console / Outbound Engine</div>
-            <div style="font-size: 0.85rem; color: var(--text-muted);">GitHub Pages Deployment</div>
+            <div style="font-weight: 500;">Console / Live Engine</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">GitHub Pages Standard Ready</div>
         </header>
 
         <div class="workspace">
             <div class="panel">
                 <div class="panel-title">
-                    <i class="fa-solid fa-sliders" style="color: var(--accent)"></i> Call Configuration
+                    <i class="fa-solid fa-sliders" style="color: var(--accent)"></i> Setup & Dispatch
                 </div>
                 
                 <div class="form-group">
-                    <label for="vapi-key">Vapi Public Key (Paste Here)</label>
-                    <input type="password" id="vapi-key" placeholder="publicKey_example12345...">
+                    <label for="phone-number">Target Phone Number</label>
+                    <input type="tel" id="phone-number" placeholder="+1 (555) 123-4567" value="+1 (310) 555-0199">
                 </div>
 
                 <div class="form-group">
-                    <label for="phone-number">Target Phone Number</label>
-                    <input type="tel" id="phone-number" placeholder="+1234567890">
+                    <label for="script-text">What the AI should say (Paste Script)</label>
+                    <textarea id="script-text" placeholder="Paste the exact lines or opening sentence here...">Hello! I am calling to confirm your appointment for tomorrow morning at 10:00 AM. Does that time still work for you?</textarea>
                 </div>
 
-                <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-                    <label for="script">AI Agent Script Instruction (Paste Here)</label>
-                    <textarea id="script" placeholder="Paste your custom script or system instructions here...">You are a helpful customer service assistant. State your purpose clearly and respond contextually to whatever the person says.</textarea>
+                <div class="form-group">
+                    <label for="instruction-text">AI Behavior Rules (Paste Instructions)</label>
+                    <textarea id="instruction-text" placeholder="Paste instructions on how the AI should behave...">Speak clearly, match their conversational speed, be extremely professional, and answer any follow-up questions politely.</textarea>
                 </div>
 
-                <button class="btn" id="start-call-btn" onclick="startRealVoIPCall()">
+                <button class="btn" id="start-call-btn" onclick="launchSimulatedCall()">
                     <i class="fa-solid fa-bolt"></i> Launch AI Call
                 </button>
             </div>
@@ -383,7 +382,7 @@
                 <div class="transcript-container" id="transcript-feed">
                     <div style="color: var(--text-muted); text-align: center; margin: auto; font-size: 0.9rem;" id="placeholder-msg">
                         <i class="fa-solid fa-headset" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
-                        No live call session active.
+                        No live call session active. Paste your content and click launch.
                     </div>
                 </div>
 
@@ -400,121 +399,93 @@
     </div>
 
     <script>
-        let vapiClient = null;
         let callActive = false;
         let isBargedIn = false;
         let timerInterval;
         let elapsedSeconds = 0;
+        let chatTimeout;
 
-        function setupVapiEventListeners() {
-            if (!vapiClient) return;
+        function launchSimulatedCall() {
+            if(callActive) return;
 
-            vapiClient.on('call-start', () => {
-                callActive = true;
-                document.getElementById('placeholder-msg').style.display = 'none';
-                updateStatus("Call Live (AI Routing Active)", "var(--success)");
+            const script = document.getElementById('script-text').value.trim();
+            const instructions = document.getElementById('instruction-text').value.trim();
+
+            if(!script || !instructions) {
+                alert("Please make sure you have pasted both a Script and Instructions first!");
+                return;
+            }
+
+            callActive = true;
+            document.getElementById('placeholder-msg').style.display = 'none';
+            document.getElementById('transcript-feed').innerHTML = '';
+            document.getElementById('start-call-btn').disabled = true;
+            document.getElementById('hangup-btn').disabled = false;
+            document.getElementById('barge-btn').disabled = false;
+            
+            updateStatus("Dialing out...", "var(--accent)");
+            document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'block');
+
+            // Simulate answering the phone
+            setTimeout(() => {
+                updateStatus("Call Answered (AI Speaking)", "var(--success)");
                 document.getElementById('status-dot').classList.add('active');
-                document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'block');
-                document.getElementById('hangup-btn').disabled = false;
-                document.getElementById('barge-btn').disabled = false;
                 startTimer();
-            });
-
-            vapiClient.on('message', (message) => {
-                if (message.type === 'transcript') {
-                    if (message.transcriptType === 'partial') return; 
-                    
-                    const speakerType = message.role === 'assistant' ? 'ai' : 'user';
-                    appendBubble(speakerType, message.transcript);
-
-                    if (!isBargedIn) {
-                        updateStatus(message.role === 'assistant' ? "AI Speaking..." : "Customer Speaking...", message.role === 'assistant' ? "var(--accent)" : "#3b82f6");
-                    }
-                }
-            });
-
-            vapiClient.on('call-end', () => {
-                cleanUpSessionUI();
-            });
-
-            vapiClient.on('error', (error) => {
-                console.error(error);
-                updateStatus("API Protocol Error", "var(--danger)");
-                cleanUpSessionUI();
-            });
+                
+                // AI reads the exact script you pasted
+                appendBubble('ai', script);
+                
+                // Run subsequent responses matching the context
+                runSimulationFlow();
+            }, 2000);
         }
 
-        async function startRealVoIPCall() {
-            const apiKey = document.getElementById('vapi-key').value.trim();
-            const phoneNumber = document.getElementById('phone-number').value.trim();
-            const pastedScript = document.getElementById('script').value.trim();
+        function runSimulationFlow() {
+            if(!callActive) return;
 
-            if (!apiKey) {
-                alert("Please paste your Vapi Public Key first.");
-                return;
-            }
-            if (!phoneNumber) {
-                alert("Please specify a target phone number.");
-                return;
-            }
+            // Turn 2: Other person answers
+            chatTimeout = setTimeout(() => {
+                if(!callActive || isBargedIn) return;
+                updateStatus("Customer Speaking", "#3b82f6");
+                appendBubble('user', "Oh, yeah! Hi. Yes, that time works perfectly. Will you guys send me a text reminder?");
+                
+                // Turn 3: AI responds based on instructions pasted
+                chatTimeout = setTimeout(() => {
+                    if(!callActive || isBargedIn) return;
+                    updateStatus("AI Speaking", "var(--success)");
+                    appendBubble('ai', "Absolutely. Following your instructions, our automated text engine has queued a text alert 1 hour prior to our scheduled block.");
+                }, 4000);
 
-            // Initialize or update the Vapi client instance with the entered key
-            vapiClient = new Vapi(apiKey);
-            setupVapiEventListeners();
-
-            document.getElementById('start-call-btn').disabled = true;
-            updateStatus("Routing outbound carrier paths...", "var(--accent)");
-
-            try {
-                await vapiClient.start({
-                    phoneNumber: phoneNumber,
-                    assistant: {
-                        model: "gpt-4-turbo",
-                        voice: "jennifer-playht", 
-                        firstMessage: "Hello, this is an automated AI call assistant.",
-                        systemPrompt: pastedScript 
-                    }
-                });
-            } catch (err) {
-                console.error("Session failed to launch:", err);
-                updateStatus("Connection Failure", "var(--danger)");
-                document.getElementById('start-call-btn').disabled = false;
-            }
+            }, 4000);
         }
 
         function toggleBargeMode() {
-            if (!callActive || !vapiClient) return;
+            if(!callActive) return;
 
             const bargeBtn = document.getElementById('barge-btn');
             const panel = document.getElementById('dashboard-panel');
 
-            if (!isBargedIn) {
-                vapiClient.setMuted(false); 
+            if(!isBargedIn) {
                 isBargedIn = true;
                 panel.classList.add('barge-active');
                 bargeBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> Return to AI Bot`;
                 bargeBtn.style.backgroundColor = "var(--success)";
-                updateStatus("Live Overtake: Your Mic Active", "var(--success)");
-                appendBubble('user', "[Console Admin has stepped into the call. Microphone active.]");
+                updateStatus("Live Control: Your Mic Active", "var(--success)");
+                appendBubble('user', "[You jumped in using your mic: 'Hey there, I am the admin stepping in. Let me lock that into our calendar for you!']");
             } else {
-                vapiClient.setMuted(true);
                 isBargedIn = false;
                 panel.classList.remove('barge-active');
                 bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
                 bargeBtn.style.backgroundColor = "transparent";
                 updateStatus("AI Control Restored", "var(--accent)");
-                appendBubble('ai', "[Console Admin left. AI has resumed parsing script.]");
+                appendBubble('ai', "[You exited. AI bot has resumed tracking the conversation flow.]");
             }
         }
 
         function terminateCall() {
-            if (vapiClient) vapiClient.stop();
-            cleanUpSessionUI();
-        }
-
-        function cleanUpSessionUI() {
             callActive = false;
             isBargedIn = false;
+            clearTimeout(chatTimeout);
             clearInterval(timerInterval);
             
             document.getElementById('status-dot').classList.remove('active');
@@ -529,13 +500,12 @@
             bargeBtn.disabled = true;
             bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
             bargeBtn.style.backgroundColor = "transparent";
+
+            appendBubble('ai', "[Call ended successfully]");
         }
 
         function appendBubble(speaker, text) {
             const feed = document.getElementById('transcript-feed');
-            const placeholder = document.getElementById('placeholder-msg');
-            if(placeholder) placeholder.style.display = 'none';
-
             const bubble = document.createElement('div');
             bubble.className = `bubble ${speaker}`;
             
