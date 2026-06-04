@@ -1,1 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI - Premium Voice Dispatch & Analytics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #141417;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2.5rem;
+            background: linear-gradient(to right, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background-color: #27272a80;
+            color: var(--text-main);
+        }
+
+        /* Main Content Container */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            height: 70px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent), #a855f7);
+        }
+
+        /* Workspace Core layout */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        /* Glassmorphic Cards */
+        .panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            background-color: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea {
+            resize: none;
+            flex: 1;
+            min-height: 200px;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Dashboard & Call Stream */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background-color: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+        }
+
+        .dot.active {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Stream/Transcript Feed */
+        .transcript-container {
+            flex: 1;
+            background-color: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .bubble.ai {
+            background-color: #27272a80;
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem;
+            border-left: 3px solid var(--accent);
+        }
+
+        .bubble.user {
+            background-color: #1d4ed820;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem;
+            border-right: 3px solid #3b82f6;
+        }
+
+        .speaker-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Intercept Controls */
+        .intercept-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            background-color: #27272a;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background-color: #3f3f46;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Audio Wave Animation */
+        .wave-container {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 20px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 3px;
+            animation: bounce 1s ease-in-out infinite;
+            display: none;
+        }
+
+        /* Active Call/Barge Overrides */
+        .barge-active {
+            border-color: var(--success) !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-brain" style="color: var(--accent);"></i>
+            <span>NEXUS.AI</span>
+        </div>
+        <a href="#" class="nav-item active"><i class="fa-solid fa-phone-volume"></i> Outbound Engine</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Call History</a>
+        <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Developer API</a>
+    </div>
+
+    <div class="main-container">
+        <header>
+            <div style="font-weight: 500;">Console / Outbound Engine</div>
+            <div class="user-profile">
+                <span>Premium Tier Account</span>
+                <div class="avatar"></div>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <div class="panel">
+                <div class="panel-title">
+                    <i class="fa-solid fa-sliders" style="color: var(--accent)"></i> Call Configuration
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone-number">Target Phone Number</label>
+                    <input type="tel" id="phone-number" placeholder="+1 (555) 000-0000" value="+1 (310) 555-0199">
+                </div>
+
+                <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                    <label for="script">AI Agent Script Instruction</label>
+                    <textarea id="script" placeholder="Paste the script or workflow instructions here...">You are Alex, a premium concierge executive representing Nexus Luxuries. Call the client to confirm their private villa booking for next weekend. Be incredibly polite, accommodating, and match their conversational speed. Answer any itinerary questions using your built-in knowledge base.</textarea>
+                </div>
+
+                <button class="btn" id="start-call-btn" onclick="initiateSimulatedCall()">
+                    <i class="fa-solid fa-bolt"></i> Launch AI Call
+                </button>
+            </div>
+
+            <div class="panel" id="dashboard-panel">
+                <div class="panel-title" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-satellite-dish" style="color: var(--accent)"></i> Live Call Dashboard
+                    </div>
+                    <div class="wave-container" id="wave-visualizer">
+                        <div class="wave-bar" style="animation-delay: 0.1s"></div>
+                        <div class="wave-bar" style="animation-delay: 0.3s"></div>
+                        <div class="wave-bar" style="animation-delay: 0.5s"></div>
+                        <div class="wave-bar" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-badge">
+                        <div class="dot" id="status-dot"></div>
+                        <span id="status-text">System Ready</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);" id="duration-counter">
+                        Duration: 00:00
+                    </div>
+                </div>
+
+                <div class="transcript-container" id="transcript-feed">
+                    <div style="color: var(--text-muted); text-align: center; margin: auto; font-size: 0.9rem;" id="placeholder-msg">
+                        <i class="fa-solid fa-headset" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        No live call session active. Configure parameters and launch agent.
+                    </div>
+                </div>
+
+                <div class="intercept-panel">
+                    <button class="btn btn-secondary" id="barge-btn" onclick="toggleBargeMode()" disabled>
+                        <i class="fa-solid fa-microphone"></i> Pop Into Call
+                    </button>
+                    <button class="btn btn-danger" id="hangup-btn" onclick="terminateCall()" disabled>
+                        <i class="fa-solid fa-phone-slash"></i> End Session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionActive = false;
+        let bargeModeActive = false;
+        let durationInterval;
+        let simulationTimeout;
+        let elapsedSeconds = 0;
+
+        const transcriptData = [
+            { speaker: "ai", text: "Hello! This is Alex speaking on behalf of Nexus Luxuries. Am I speaking with the primary reservation holder?" },
+            { speaker: "user", text: "Uh, yes this is he. Who is this again?" },
+            { speaker: "ai", text: "Hi there! I am your AI concierge assistant. I'm calling to personally verify your private villa booking for this upcoming weekend. I just wanted to verify everything is in order." },
+            { speaker: "user", text: "Oh perfect, fantastic. Yeah, I wanted to check if the infinity pool is heated?" },
+            { speaker: "ai", text: "Yes, absolutely! The pool is automatically set to a pristine 84 degrees Fahrenheit for your arrival, but I can adjust that remotely right now if you prefer it warmer." },
+            { speaker: "user", text: "Wow, perfect. Actually, wait a second, can I talk to a real person just to confirm my dietary requests?" }
+        ];
+
+        function initiateSimulatedCall() {
+            if(sessionActive) return;
+
+            // Reset UI state
+            sessionActive = true;
+            document.getElementById('placeholder-msg').style.display = 'none';
+            document.getElementById('transcript-feed').innerHTML = '';
+            document.getElementById('start-call-btn').disabled = true;
+            document.getElementById('hangup-btn').disabled = false;
+            document.getElementById('barge-btn').disabled = false;
+            
+            // Set dial state
+            updateStatus("Dialing target number...", "var(--accent)");
+            
+            // Animate wave lines
+            document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'block');
+
+            // Simulate Ringing -> Answered
+            setTimeout(() => {
+                updateStatus("Call Answered (AI Speaking)", "var(--success)");
+                document.getElementById('status-dot').classList.add('active');
+                startTimer();
+                runTranscriptSimulation(0);
+            }, 2500);
+        }
+
+        function runTranscriptSimulation(index) {
+            if (!sessionActive || index >= transcriptData.length) return;
+
+            simulationTimeout = setTimeout(() => {
+                // If developer barged into the call, delay automated script flow
+                if (bargeModeActive && transcriptData[index].speaker === 'ai') {
+                    runTranscriptSimulation(index); 
+                    return;
+                }
+
+                appendBubble(transcriptData[index].speaker, transcriptData[index].text);
+                
+                // Adjust status headers dynamically based on who is talking
+                if(transcriptData[index].speaker === 'ai' && !bargeModeActive) {
+                    updateStatus("AI Speaking", "var(--success)");
+                } else if (!bargeModeActive) {
+                    updateStatus("Customer Speaking", "#3b82f6");
+                }
+
+                runTranscriptSimulation(index + 1);
+            }, index === 0 ? 1000 : 4000);
+        }
+
+        function appendBubble(speaker, text) {
+            const feed = document.getElementById('transcript-feed');
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${speaker}`;
+            
+            const label = speaker === 'ai' ? 'Nexus AI Agent' : 'Customer (Live)';
+            bubble.innerHTML = `<div class="speaker-label">${label}</div><div>${text}</div>`;
+            
+            feed.appendChild(bubble);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function toggleBargeMode() {
+            if(!sessionActive) return;
+
+            const bargeBtn = document.getElementById('barge-btn');
+            const panel = document.getElementById('dashboard-panel');
+
+            if(!bargeModeActive) {
+                // Activate mic / Intercept call
+                bargeModeActive = true;
+                panel.classList.add('barge-active');
+                bargeBtn.innerHTML = `<i class="fa-solid fa-microphone-slash"></i> Exit Audio Bot`;
+                bargeBtn.style.backgroundColor = "var(--success)";
+                updateStatus("Live Control: Your Mic Active", "var(--success)");
+                appendBubble('user', "*Admin popped into call room. AI standby mode active.*");
+            } else {
+                // Return call flow to AI
+                bargeModeActive = false;
+                panel.classList.remove('barge-active');
+                bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
+                bargeBtn.style.backgroundColor = "transparent";
+                updateStatus("AI Control Restored", "var(--accent)");
+                appendBubble('ai', "*Admin exited. AI has resumed parsing script context.*");
+            }
+        }
+
+        function terminateCall() {
+            sessionActive = false;
+            bargeModeActive = false;
+            clearTimeout(simulationTimeout);
+            clearInterval(durationInterval);
+            
+            // Reset UI
+            document.getElementById('status-dot').classList.remove('active');
+            updateStatus("Session Terminated", varColor = "var(--danger)");
+            document.getElementById('dashboard-panel').classList.remove('barge-active');
+            
+            document.querySelectorAll('.wave-bar').forEach(bar => bar.style.display = 'none');
+            
+            document.getElementById('start-call-btn').disabled = false;
+            document.getElementById('hangup-btn').disabled = true;
+            const bargeBtn = document.getElementById('barge-btn');
+            bargeBtn.disabled = true;
+            bargeBtn.innerHTML = `<i class="fa-solid fa-microphone"></i> Pop Into Call`;
+            bargeBtn.style.backgroundColor = "transparent";
+
+            appendBubble('ai', "*Call hung up gracefully by console system dashboard.*");
+        }
+
+        function updateStatus(text, color) {
+            const statusText = document.getElementById('status-text');
+            const dot = document.getElementById('status-dot');
+            statusText.innerText = text;
+            dot.style.backgroundColor = color;
+            if(sessionActive) dot.style.boxShadow = `0 0 8px ${color}`;
+        }
+
+        function startTimer() {
+            elapsedSeconds = 0;
+            clearInterval(durationInterval);
+            durationInterval = setInterval(() => {
+                elapsedSeconds++;
+                let min = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+                let sec = (elapsedSeconds % 60).toString().padStart(2, '0');
+                document.getElementById('duration-counter').innerText = `Duration: ${min}:${sec}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
